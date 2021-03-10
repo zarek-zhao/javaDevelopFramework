@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+<!--    <bean id="school" class="com.zarek.ioc.domain.School" autowire="byName">-->
+<!--        <property name="name" value="贵溪市第一中学" />-->
+<!--        &lt;!&ndash;        <property name="student" ref="student" />&ndash;&gt;-->
+<!--    </bean>-->
+
+</beans>

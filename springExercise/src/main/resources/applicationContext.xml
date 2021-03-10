@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context" xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+            http://www.springframework.org/schema/beans/spring-beans.xsd
+            http://www.springframework.org/schema/context
+            http://www.springframework.org/schema/context/spring-context.xsd http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd http://www.springframework.org/schema/aop https://www.springframework.org/schema/aop/spring-aop.xsd">
+
+    <!--声明组件扫描器(component-scan):指定注解所在的包名-->
+    <context:component-scan base-package="com.zarek.ioc.domain"/>
+
+    <import resource="classpath:spring-school.xml"/>
+    <import resource="classpath:spring-student.xml"/>
+    <import resource="classpath:spring-aspectj.xml"/>
+    <import resource="classpath:spring-transaction.xml" />
+
+    <!--    注册bean对象
+            id:自定义对象的名称，通过id在代码中使用对象
+            class:类的全限定名称，不能是接口-->
+    <bean id="someService" class="com.zarek.ioc.service.impl.SomeServiceImpl"/>
+    <bean id="myDate" class="java.util.Date">
+        <property name="time" value="1547646700353"/>
+    </bean>
+
+    <!--    声明切面的目标类对象-->
+    <bean id="someServiceTarget" class="com.zarek.aop.service.impl.SomeServiceImpl"/>
+
+    <!--    配置阿里的Druid连接池
+            无需配置驱动，可以根据url检测出驱动
+        -->
+    <!--    通过配置文件的方法配置连接池
+            引入属性配置文件 spring-context.xsd
+            location:指定属性配置文件的位置，使用classpath表示类路径
+    -->
+    <context:property-placeholder location="classpath:jdbc.properties"/>
+    <bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource"
+          init-method="init" destroy-method="close">
+
+        <property name="url" value="${jdbc.url}"/>
+        <property name="username" value="${jdbc.user}"/>
+        <property name="password" value="${jdbc.password}"/>
+
+    </bean>
+
+    <!--    注册sqlSessionFactory的Bean-->
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+
+        <!--        -->
+        <property name="dataSource" ref="dataSource"/>
+        <!--        指定mybatis的主配置文件-->
+        <property name="configLocation" value="classpath:mybatis-config.xml"/>
+
+    </bean>
+
+    <!--    定义Mapper扫描配置器MapperScannerConfigurer-->
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+
+        <property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"/>
+        <property name="basePackage" value="com.zarek.mybatis.dao,com.zarek.transactionspring.dao"/>
+
+    </bean>
+<!--
+向 Service 注入 Mapper 代理对象时需要注意，由于通过 Mapper 扫描配置器
+MapperScannerConfigurer 生成的 Mapper 代理对象没有名称，所以在向 Service 注入 Mapper
+代理时，无法通过名称注入。但可通过接口的简单类名注入，因为生成的是这个 Dao 接口
+的对象
+-->
+    <bean id="myStudentService" class="com.zarek.mybatis.service.impl.StudentServiceImpl">
+
+        <property name="studentDao" ref="studentDao" />
+
+    </bean>
+
+
+<!--    声明事务管理器-->
+    <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource" />
+    </bean>
+
+<!--    声明事务注解驱动-->
+    <tx:annotation-driven transaction-manager="transactionManager" />
+
+<!--    事务通知(切面)-->
+    <tx:advice id="buyAdvice" transaction-manager="transactionManager">
+
+        <tx:attributes>
+            <tx:method name="buy" propagation="REQUIRED" isolation="DEFAULT"
+            rollback-for="java.lang.NullPointerException,com.zarek.transactionspring.exception.NotEnoughExcepion"/>
+
+            <tx:method name="add*" propagation="REQUIRED" isolation="DEFAULT"
+            rollback-for="java.lang.Exception"/>
+
+            <tx:method name="*" propagation="SUPPORTS" />
+
+
+        </tx:attributes>
+
+    </tx:advice>
+
+
+<!--    aop配置:通知应用的切入点-->
+    <aop:config>
+
+        <aop:pointcut id="servicePt" expression="execution(* *..service..*.*(..))"/>
+<!--        声明增强器：通知和切入点的组合-->
+        <aop:advisor advice-ref="buyAdvice" pointcut-ref="servicePt" />
+
+    </aop:config>
+
+</beans>

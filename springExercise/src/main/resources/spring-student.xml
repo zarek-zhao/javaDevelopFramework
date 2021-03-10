@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <bean id="student2" class="com.zarek.ioc.domain.Student">
+        <property name="name" value="赵云" />
+        <property name="age" value="80" />
+        <property name="gender" value="男" />
+    </bean>
+
+    <bean id="student1" class="com.zarek.ioc.domain.Student">
+        <constructor-arg name="age" value="223" />
+        <constructor-arg name="gender" value="女" />
+        <constructor-arg name="name" value="黄月英" />
+    </bean>
+
+</beans>

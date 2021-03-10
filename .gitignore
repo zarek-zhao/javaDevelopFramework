@@ -1,0 +1,4 @@
+# Project exclude paths
+/CRM/target/
+/mybatis_exercise/target/
+/springExercise/target/
